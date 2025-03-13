@@ -29,7 +29,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['agregar'])) {
 if (isset($_GET['editar'])) {
     $id = $_GET['editar'];
     $result = $conn->query("SELECT * FROM habitaciones WHERE id = $id");
-    $habitacion = $result->fetch_assoc();
+    
+    if ($result && $result->num_rows > 0) {
+        $habitacion = $result->fetch_assoc();
+    } else {
+        echo "Habitación no encontrada.";
+        exit;
+    }
 }
 
 // Actualizar habitación
@@ -66,55 +72,76 @@ $habitaciones = $conn->query("SELECT * FROM habitaciones");
 <head>
     <meta charset="UTF-8">
     <title>Gestionar Habitaciones</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/styles.css">
 </head>
 <body>
-    <h1>Gestionar Habitaciones</h1>
-    
-    <h2>Agregar Nueva Habitación</h2>
-    <form method="post">
-        <input type="text" name="numero" placeholder="Número de Habitación" required>
-        <input type="text" name="tipo" placeholder="Tipo de Habitación" required>
-        <input type="number" step="0.01" name="precio" placeholder="Precio por Noche" required>
-        <button type="submit" name="agregar">Agregar Habitación</button>
-    </form>
+    <div class="container mt-5">
+        <h1 class="text-center">Gestionar Habitaciones</h1>
+        
+        <h2>Agregar Nueva Habitación</h2>
+        <form method="post">
+            <div class="mb-3">
+                <input type="text" name="numero" class="form-control" placeholder="Número de Habitación" required>
+            </div>
+            <div class="mb-3">
+                <input type="text" name="tipo" class="form-control" placeholder="Tipo de Habitación" required>
+            </div>
+            <div class="mb-3">
+                <input type="number" step="0.01" name="precio" class="form-control" placeholder="Precio por Noche" required>
+            </div>
+            <button type="submit" name="agregar" class="btn btn-primary">Agregar Habitación</button>
+        </form>
 
-    <h2>Habitaciones Existentes</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Número</th>
-                <th>Tipo</th>
-                <th>Precio</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php while ($habitacion = $habitaciones->fetch_assoc()): ?>
-            <tr>
-                <td><?= $habitacion['numero'] ?></td>
-                <td><?= $habitacion['tipo'] ?></td>
-                <td><?= $habitacion['precio'] ?></td>
-                <td><?= $habitacion['estado'] ?></td>
-                <td>
-                    <a href="?editar=<?= $habitacion['id'] ?>">Editar</a> |
-                    <a href="?eliminar=<?= $habitacion['id'] ?>" onclick="return confirm('¿Seguro que quieres eliminar esta habitación?')">Eliminar</a>
-                </td>
-            </tr>
-            <?php endwhile; ?>
-        </tbody>
-    </table>
+        <h2 class="mt-5">Habitaciones Existentes</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Número</th>
+                    <th>Tipo</th>
+                    <th>Precio</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php while ($habitacion = $habitaciones->fetch_assoc()): ?>
+                <tr>
+                    <td><?= $habitacion['numero'] ?></td>
+                    <td><?= $habitacion['tipo'] ?></td>
+                    <td><?= $habitacion['precio'] ?></td>
+                    <td><?= $habitacion['estado'] ?></td>
+                    <td>
+                        <a href="?editar=<?= $habitacion['id'] ?>" class="btn btn-warning btn-sm">Editar</a>
+                        <a href="?eliminar=<?= $habitacion['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que quieres eliminar esta habitación?')">Eliminar</a>
+                    </td>
+                </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
 
-    <?php if (isset($_GET['editar'])): ?>
-    <h2>Editar Habitación</h2>
-    <form method="post">
-        <input type="hidden" name="id" value="<?= $habitacion['id'] ?>">
-        <input type="text" name="numero" value="<?= $habitacion['numero'] ?>" required>
-        <input type="text" name="tipo" value="<?= $habitacion['tipo'] ?>" required>
-        <input type="number" step="0.01" name="precio" value="<?= $habitacion['precio'] ?>" required>
-        <button type="submit" name="editar">Actualizar Habitación</button>
-    </form>
-    <?php endif; ?>
+        <?php if (isset($_GET['editar'])): ?>
+        <h2 class="mt-5">Editar Habitación</h2>
+        // Formulario de edición
+        <form method="post">
+            <input type="hidden" name="id" value="<?= $habitacion['id'] ?>">
+            <div class="mb-3">
+                <input type="text" name="numero" class="form-control" value="<?= $habitacion['numero'] ?>" required>
+            </div>
+            <div class="mb-3">
+                <input type="text" name="tipo" class="form-control" value="<?= $habitacion['tipo'] ?>" required>
+            </div>
+            <div class="mb-3">
+                <input type="number" step="0.01" name="precio" class="form-control" value="<?= $habitacion['precio'] ?>" required>
+            </div>
+            <div class="mb-3">
+                <textarea name="descripcion" class="form-control"><?= $habitacion['descripcion'] ?></textarea>
+            </div>
+            <button type="submit" name="editar" class="btn btn-success">Actualizar Habitación</button>
+        </form>
+
+        <?php endif; ?>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -2,28 +2,24 @@
 session_start();
 include "../config.php";
 
-// Verificar si el usuario está logueado
-if (!isset($_SESSION['usuario'])) {
+if (!isset($_SESSION['usuario_id'])) {
     header("Location: ../login.php");
     exit;
 }
 
-// Obtener habitaciones disponibles
+$usuario_id = $_SESSION['usuario_id'];
+
 $habitaciones = $conn->query("SELECT * FROM habitaciones WHERE estado = 'disponible'");
 
-// Procesar la reserva
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $habitacion_id = $_POST['habitacion_id'];
     $fecha_entrada = $_POST['fecha_entrada'];
     $fecha_salida = $_POST['fecha_salida'];
-    $usuario_id = $_SESSION['usuario_id'];
 
-    // Insertar la reserva en la base de datos
     $stmt = $conn->prepare("INSERT INTO reservas (usuario_id, habitacion_id, fecha_entrada, fecha_salida, estado) VALUES (?, ?, ?, ?, 'pendiente')");
     $stmt->bind_param("iiss", $usuario_id, $habitacion_id, $fecha_entrada, $fecha_salida);
-    
+
     if ($stmt->execute()) {
-        // Actualizar estado de la habitación a no disponible
         $conn->query("UPDATE habitaciones SET estado = 'no disponible' WHERE id = $habitacion_id");
         echo "Reserva realizada con éxito.";
     } else {
@@ -33,33 +29,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 ?>
 
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Reservar Habitación</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/styles.css">
 </head>
 <body>
-    <h1>Hacer una Reserva</h1>
+    <div class="container mt-5">
+        <h1 class="text-center">Hacer una Reserva</h1>
 
-    <form method="post">
-        <label for="habitacion_id">Seleccionar Habitación:</label>
-        <select name="habitacion_id" required>
-            <?php while ($habitacion = $habitaciones->fetch_assoc()): ?>
-            <option value="<?= $habitacion['id'] ?>"><?= $habitacion['numero'] ?> - <?= $habitacion['tipo'] ?> - $<?= $habitacion['precio'] ?> por noche</option>
-            <?php endwhile; ?>
-        </select>
+        <form method="post">
+            <div class="mb-3">
+                <label for="habitacion_id" class="form-label">Seleccionar Habitación:</label>
+                <select name="habitacion_id" class="form-select" required>
+                    <?php while ($habitacion = $habitaciones->fetch_assoc()): ?>
+                    <option value="<?= $habitacion['id'] ?>"><?= $habitacion['numero'] ?> - <?= $habitacion['tipo'] ?> - $<?= $habitacion['precio'] ?> por noche</option>
+                    <?php endwhile; ?>
+                </select>
+            </div>
 
-        <label for="fecha_entrada">Fecha de Entrada:</label>
-        <input type="date" name="fecha_entrada" required>
+            <div class="mb-3">
+                <label for="fecha_entrada" class="form-label">Fecha de Entrada:</label>
+                <input type="date" name="fecha_entrada" class="form-control" required>
+            </div>
 
-        <label for="fecha_salida">Fecha de Salida:</label>
-        <input type="date" name="fecha_salida" required>
+            <div class="mb-3">
+                <label for="fecha_salida" class="form-label">Fecha de Salida:</label>
+                <input type="date" name="fecha_salida" class="form-control" required>
+            </div>
 
-        <button type="submit">Hacer Reserva</button>
-    </form>
+            <button type="submit" class="btn btn-primary">Hacer Reserva</button>
+        </form>
 
-    <a href="mis_reservas.php">Ver mis reservas</a>
+        <a href="mis_reservas.php" class="btn btn-link mt-3">Ver mis reservas</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
